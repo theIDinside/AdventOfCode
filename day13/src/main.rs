@@ -20,6 +20,7 @@ impl Shuttle {
     pub fn print(&self) {
         println!("Shuttle id: [{:3}] next departure: [{:4}], next departure in wait time: [{:3}]", self.id, self.next_departure_time, self.next_departure_wait);
     }
+    pub fn answer(&self) -> i64 { self.next_departure_wait * self.id } 
 }
 
 impl Ord for Shuttle {
@@ -40,17 +41,17 @@ impl PartialEq for Shuttle {
     }
 }
 
+
 // God I love Rust.
 fn main() {
     let data = get_input();
     let lines: Vec<&str> = data.lines().collect();
-    
     let time_stamp = lines[0].parse::<i64>().expect("failed to parse time stamp");
     let bus_id_data = lines[1];
-
     let bus_ids: Vec<i64> = bus_id_data.split(",")
-                             .filter(|s| *s != "x")
-                             .map(|id| id.parse::<i64>().expect("failed to parse Bus ID"))
+                             .filter_map(|str| {
+                                str.parse::<i64>().ok() // ok converts to Option<T> and filter_map filters out any None's, thus any non-numbers get filtered
+                             })
                              .collect();
 
     let mut shuttles: Vec<Shuttle> = bus_ids.iter().filter_map(|id| {
@@ -69,7 +70,9 @@ fn main() {
     println!("Sorting shuttles by how long the wait is in time units...\n");
     shuttles.sort();
  
-    for shuttle in shuttles {
+    for shuttle in &shuttles {
         shuttle.print();
     }
+
+    println!("Result of part 1: {}", shuttles[0].answer())
 }
